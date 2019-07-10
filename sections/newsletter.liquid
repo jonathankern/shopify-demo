@@ -1,44 +1,49 @@
-<div class="newsletter" data-section-id="{{ section.id }}" data-section-type="newsletter-section">
-  <div class="wrapper">
-    {% unless section.settings.heading == blank %}
-      <div class="section-header text-center">
-        <h2 class="h1 section-header__title">{{ section.settings.heading | escape }}</h2>
-        {% if section.settings.subheading == blank %}
-          <hr class="hr--small">
-        {% endif %}
-      </div>
-    {% endunless %}
-    {% unless section.settings.subheading == blank %}
-      <div class="section-subheading rte text-center">
-        {{ section.settings.subheading }}
-        <hr class="hr--small">
-      </div>
-    {% endunless %}
-    {% form 'customer' %}
-      {{ form.errors | default_errors }}
-      {% if form.posted_successfully? %}
-        <div class="newsletter--form">
-          <div class="note form-success">{{ 'general.newsletter_form.newsletter_confirmation' | t }}</div>
-        </div>
-      {% else %}
-        <label for="Email" class="newsletter__label hidden-label">{{ 'general.newsletter_form.newsletter_email' | t }}</label>
-        <input type="hidden" name="contact[tags]" value="newsletter">
-        <div class="newsletter--form">
-          <div class="input-group">
-            <input type="email" value="{% if customer %}{{ customer.email }}{% endif %}" placeholder="{{ 'general.newsletter_form.newsletter_placeholder' | t }}" name="contact[email]" id="Email" class="input-group-field newsletter__input" autocorrect="off" autocapitalize="off">
-            <span class="input-group-btn">
-              <button id="Subscribe" type="submit"
-                class="btn newsletter__submit"
-                aria-label="{{ 'general.newsletter_form.submit' | t }}">
-                <span class="newsletter__submit-text--large">{{ 'general.newsletter_form.submit' | t }}</span>
-                <span class="newsletter__submit-text--small">
-                  <span class="icon icon-arrow-right" aria-hidden="true"></span>
-                </span>
-              </button>
-            </span>
-          </div>
-        </div>
+<div class="newsletter-section{% if section.settings.show_background %} index-section--newsletter-background{% endif %}">
+  <div class="page-width">
+    <div class="section-header text-center">
+      {% if section.settings.section_title != blank %}
+        <h2 class="h2">{{ section.settings.section_title | escape }}</h2>
       {% endif %}
+      {% if section.settings.subheading != blank %}
+        <div class="rte">{{ section.settings.subheading }}</div>
+      {% endif %}
+    </div>
+    {%- assign formId = 'Contact_' | append: section.id -%}
+    {% form 'customer', id: formId, novalidate: 'novalidate', class: 'contact-form form-single-field' %}
+      {%- if form.posted_successfully? -%}
+        <p class="form-message form-message--success" tabindex="-1" data-form-status>
+          {{ 'general.newsletter_form.confirmation' | t }}
+        </p>
+      {%- endif -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <div class="input-group {% if form.errors %} input-group--error{% endif %}">
+        <input type="email"
+          name="contact[email]"
+          id="{{ formId }}-email"
+          class="input-group__field{% if form.errors %} input--error{% endif %}"
+          value="{{ form.email }}"
+          placeholder="{{ 'general.newsletter_form.email_placeholder' | t }}"
+          aria-label="{{ 'general.newsletter_form.email_placeholder' | t }}"
+          aria-required="true"
+          autocorrect="off"
+          autocapitalize="off"
+          {% if form.errors %}
+            aria-invalid="true"
+            aria-describedby="{{ formId }}-email-error"
+            data-form-status
+          {% endif %}
+          >
+        <span class="input-group__btn">
+          <button type="submit" class="btn" name="commit" id="Subscribe">
+            <span>{{ 'general.newsletter_form.submit' | t }}</span>
+          </button>
+        </span>
+      </div>
+      {%- if form.errors contains 'email' -%}
+        <span id="{{ formId }}-email-error" class="input-error-message">
+          {% include 'icon-error' %} {{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}.
+        </span>
+      {%- endif -%}
     {% endform %}
   </div>
 </div>
@@ -59,16 +64,16 @@
     "zh-CN": "新闻通讯",
     "zh-TW": "電子報"
   },
-  "class": "index-newsletter-section",
+  "class": "index-section index-section--flush",
   "settings": [
     {
       "type": "text",
-      "id": "heading",
+      "id": "section_title",
       "label": {
-        "de": "Überschrift",
+        "de": "Titel",
         "en": "Heading",
         "es": "Título",
-        "fr": "Titre",
+        "fr": "En-tête",
         "it": "Heading",
         "ja": "見出し",
         "nl": "Kop",
@@ -80,11 +85,11 @@
         "de": "Unseren Newsletter abonnieren",
         "en": "Subscribe to our newsletter",
         "es": "Suscríbete a nuestro boletín de noticias",
-        "fr": "Inscription à notre newsletter",
+        "fr": "S'inscrire à la newsletter",
         "it": "Iscriviti alla nostra newsletter",
         "ja": "ストアからのお知らせを受け取る",
         "nl": "Abonneren op onze nieuwsbrief",
-        "pt-BR": "Receber nosso newsletter",
+        "pt-BR": "Assine a nossa newsletter",
         "zh-CN": "订阅我们的新闻通讯",
         "zh-TW": "訂閱我們的電子報"
       }
@@ -93,7 +98,7 @@
       "type": "richtext",
       "id": "subheading",
       "label": {
-        "de": "Untertitel",
+        "de": "Unter-Überschrift",
         "en": "Subheading",
         "es": "Subtítulo",
         "fr": "Sous-titre",
@@ -105,47 +110,64 @@
         "zh-TW": "子標題"
       },
       "default": {
-        "de": "<p>Ein kurzer Satz, der beschreibt, was jemand abonniert</p>",
+        "de": "<p>Eine kurze Beschreibung zum Inhalt des Newsletters</p>",
         "en": "<p>A short sentence describing what someone will receive by subscribing</p>",
-        "es": "<p>Una frase corta que describe lo que alguien recibirá al suscribirse</p>",
-        "fr": "<p>Une courte phrase décrivant ce que quelqu'un recevra en s'abonnant</p>",
+        "es": "<p>Una frase corta que describe lo que las personas recibirán al suscribirse</p>",
+        "fr": "<p>Petite phrase qui décrit ce qu'on reçoit en s'inscrivant</p>",
         "it": "<p>Una breve frase che descrive ciò che qualcuno riceverà effettuando l'iscrizione</p>",
         "ja": "<p>メルマガ購読者に向けたメッセージを入れましょう</p>",
         "nl": "<p>Een korte beschrijving van wat iemand ontvangt door zich te abonneren</p>",
-        "pt-BR": "<p>Uma frase curta que descreve o que alguém receberá ao assinar</p>",
+        "pt-BR": "<p>Uma frase curta que descreva o que alguém receberá ao assinar</p>",
         "zh-CN": "<p>一个简短的句子，用于描述订阅者将收到的内容</p>",
         "zh-TW": "<p>簡短說明訂閱者可收到之內容</p>"
       }
     },
     {
+      "id": "show_background",
+      "type": "checkbox",
+      "label": {
+        "de": "Hintergrund anzeigen",
+        "en": "Show background",
+        "es": "Mostrar fondo",
+        "fr": "Afficher l'arrière-plan",
+        "it": "Mostra sfondo",
+        "ja": "背景を表示する",
+        "nl": "Toon achtergrond",
+        "pt-BR": "Exibir plano de fundo",
+        "zh-CN": "显示背景",
+        "zh-TW": "顯示背景"
+      },
+      "default": true
+    },
+    {
       "type": "paragraph",
       "content": {
-        "de": "Für alle Kunden, die sich anmelden, wird in Shopify ein Konto erstellt. [Kunden anzeigen](/admin/customers?query=&accepts_marketing=1)",
+        "de": "Alle Kunden, die sich eintragen, bekommen ein Konto in Shopify. [Kunden ansehen](/admin/customers?query=&accepts_marketing=1)",
         "en": "Any customers who sign up will have an account created for them in Shopify. [View customers](/admin/customers?query=&accepts_marketing=1)",
         "es": "Todos los clientes que se registren tendrán una cuenta creada para ellos en Shopify. [Ver clientes](/admin/customers?query=&accepts_marketing=1)",
-        "fr": "Les clients qui s'inscrivent auront un compte créé pour eux dans Shopify. [Afficher les clients](/admin/customers?query=&accepts_marketing=1)",
-        "it": "Qualsiasi cliente che si iscrive avrà un account creato appositamente per lui su Shopify. [Visualizza clienti](/admin/customers?query=&accepts_marketing=1)",
+        "fr": "Tous les clients qui s'inscrivent auront un compte créé pour eux sur Shopify. [Voir les clients](/admin/customers?query=&accepts_marketing=1)",
+        "it": "Qualsiasi cliente che si iscrive avrà un account creato appositamente su Shopify. [Visualizza clienti](/admin/customers?query=&accepts_marketing=1)",
         "ja": "サインアップしたお客様は、Shopifyでアカウントが作成されます。[お客様を表示](/admin/customers?query=&accepts_marketing=1)",
         "nl": "Voor alle klanten die zich aanmelden, wordt een Shopify-account gemaakt. [Klanten weergeven](/admin/customers?query=&accepts_marketing=1)",
         "pt-BR": "Todos os clientes que se inscreverem terão uma conta criada para eles na Shopify. [View customers](/admin/customers?query=&accepts_marketing=1)",
         "zh-CN": "任何注册用户都将在 Shopify 中拥有一个为他们创建的帐户。[查看客户](/admin/customers?query=&accepts_marketing=1)",
-        "zh-TW": "客戶註冊後就可以擁有 Shopify 的帳號。[檢視客戶](/admin/customers?query=&accepts_marketing=1)"
+        "zh-TW": "客戶註冊後就可以擁有 Shopify 帳號。[檢視客戶](/admin/customers?query=&accepts_marketing=1)"
       }
     }
   ],
   "presets": [
     {
       "name": {
-        "de": "Newsletter-Anmeldung",
-        "en": "Newsletter signup",
-        "es": "Inscríbete en el boletín",
-        "fr": "Inscription à la newsletter",
-        "it": "Iscrizione alla Newsletter",
-        "ja": "メールマガジンの登録",
-        "nl": "Nieuwsbriefaanmelding",
-        "pt-BR": "Assinatura da newsletter",
-        "zh-CN": "新闻通讯注册",
-        "zh-TW": "訂閱電子報"
+        "de": "Newsletter",
+        "en": "Newsletter",
+        "es": "Boletín",
+        "fr": "Newsletter",
+        "it": "Newsletter",
+        "ja": "メールマガジン",
+        "nl": "Nieuwsbrief",
+        "pt-BR": "Newsletter",
+        "zh-CN": "新闻通讯",
+        "zh-TW": "電子報"
       },
       "category": {
         "de": "Promotional",
@@ -160,7 +182,6 @@
         "zh-TW": "宣傳活動"
       }
     }
-  ],
-  "blocks": []
+  ]
 }
 {% endschema %}

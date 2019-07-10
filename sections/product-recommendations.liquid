@@ -1,23 +1,23 @@
 {%- if section.settings.show_product_recommendations -%}
   {%- if recommendations.performed -%}
     {%- if recommendations.products_count > 0 -%}
-      <div class="product-recommendations">
-        <div class="section-header text-center">
-          {%- if section.settings.heading != blank -%}
-            <h2 class="h1 section-header__title">{{ section.settings.heading | escape }}</h2>
-            <hr class="hr--small">
-          {%- endif -%}
-        </div>
-        <div class="grid-uniform">
-          {% assign grid_item_width = 'small--one-half medium--one-half large--one-quarter' %}
+      <div class="product-recommendations__inner">
+        {%- if section.settings.heading != blank -%}
+          <div class="section-header text-center">
+            <h2>{{ section.settings.heading | escape }}</h2>
+          </div>
+        {%- endif -%}
+        <ul class="grid grid--uniform grid--view-items">
           {%- for product in recommendations.products -%}
-            {% include 'product-grid-item' %}
+            <li class="grid__item small--one-half medium-up--one-quarter">
+              {% include 'product-card-grid', max_height: 250 %}
+            </li>
           {%- endfor -%}
-        </div>
+        </ul>
       </div>
     {%- endif -%}
   {%- else  -%}
-    <div data-product-id="{{ product.id }}" data-section-id="{{ section.id }}" data-section-type="product-recommendations"></div>
+    <div class="page-width" data-product-id="{{ product.id }}" data-section-id="{{ section.id }}" data-section-type="product-recommendations"></div>
   {%- endif -%}
 {%- endif -%}
 
@@ -92,6 +92,23 @@
         "zh-CN": "您可能还喜欢",
         "zh-TW": "您也可能喜歡"
       }
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": {
+        "de": "Lieferanten anzeigen",
+        "en": "Show vendor",
+        "es": "Mostrar proveedor",
+        "fr": "Afficher les vendeurs",
+        "it": "Mostra fornitore",
+        "ja": "販売元を表示する",
+        "nl": "Leverancier weergeven",
+        "pt-BR": "Exibir fornecedor",
+        "zh-CN": "显示厂商",
+        "zh-TW": "顯示廠商"
+      },
+      "default": false
     }
   ]
 }
