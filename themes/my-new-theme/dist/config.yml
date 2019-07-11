@@ -1,7 +1,0 @@
-default:
-  password: bb0a8ad2409ffb516eae94d454e292ea
-  theme_id: "75085250632"
-  store: frank-local-dev-partner.myshopify.com
-  ignore_files:
-  - config/settings_data.json
-  timeout: 2m0s
